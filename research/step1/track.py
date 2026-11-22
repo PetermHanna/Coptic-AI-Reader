@@ -77,8 +77,7 @@ def prior(delta):
     return min(0.15 + 0.05 * -delta, 0.3)            # going back
 
 
-def run(phones, book, truth, window=5.0, step=1.0, bias=True, max_cost=0.55):
-    ids = [r['id'] for r in BOOK]
+def run(phones, book, truth, ids, window=5.0, step=1.0, bias=True, max_cost=0.55):
     end = truth[-1]['end']
     pos, pending, results = 0.0, None, []
     t = 2.0
@@ -111,6 +110,7 @@ def main():
     ap.add_argument('--phones', help='cache file for recognized sounds')
     ap.add_argument('--verbose', action='store_true')
     ap.add_argument('--model', choices=['allosaurus', 'w2v'], default='allosaurus')
+    ap.add_argument('--book', help='book JSON in the app format (default: built-in test book)')
     a = ap.parse_args()
     truth = json.load(open(a.truth))
     try:
@@ -123,8 +123,14 @@ def main():
             phones = recognize(a.audio)
         if a.phones:
             json.dump(phones, open(a.phones, 'w'))
-    book = Book(BOOK, vowels=not a.no_vowels)
-    res = run(phones, book, truth, bias=not a.no_bias)
+    if a.book:
+        bj = json.load(open(a.book))
+        rows = [dict(id=p['id'], **p['text']) for p in bj['paragraphs']]
+        book = Book(rows, langs=tuple(bj['languages']), vowels=not a.no_vowels)
+    else:
+        rows = BOOK
+        book = Book(rows, vowels=not a.no_vowels)
+    res = run(phones, book, truth, [r['id'] for r in rows], bias=not a.no_bias)
     ok = sum(1 for _, want, got in res if want == got)
     if a.verbose:
         for t, want, got in res:
@@ -134,7 +140,11 @@ def main():
     for r in truth:
         hits = [t for t, want, got in res if want == r['id'] and got == r['id']]
         lat.append(f"{r['id']}:{(hits[0] - r['start']):.0f}s" if hits else f"{r['id']}:never")
-    print(f'correct {ok}/{len(res)} = {ok / len(res):.0%} | time to lock on: ' + ' '.join(lat))
+    secs = sorted(int(x.split(':')[-1][:-1]) for x in lat if not x.endswith('never'))
+    never = sum(x.endswith('never') for x in lat)
+    summary = ' '.join(lat) if len(lat) <= 15 else (
+        f'median {secs[len(secs) // 2] if secs else "-"}s, never found: {never}/{len(lat)}')
+    print(f'correct {ok}/{len(res)} = {ok / len(res):.0%} | time to lock on: ' + summary)
 
 
 if __name__ == '__main__':

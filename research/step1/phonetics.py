@@ -48,7 +48,7 @@ def espeak_ipa(text, voice):
 def to_ipa(text, lang):
     if lang == 'cop':
         return coptic_to_ipa(text)
-    return espeak_ipa(text, {'de': 'de', 'ar': 'ar'}[lang])
+    return espeak_ipa(text, {'de': 'de', 'ar': 'ar', 'en': 'en-us'}[lang])
 
 
 # --- Shared sound classes: similar sounds count as the same letter. ---
