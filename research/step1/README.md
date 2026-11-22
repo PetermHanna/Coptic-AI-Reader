@@ -28,7 +28,32 @@ With wav2vec2, every row is found within 1–3 s, including the German and Arabi
 
 - Whisper (free speech AI) transcribes the **Arabic** parts well, e.g. the Gospel at 20:00 and the Prayer of Reconciliation at 30:00. On **Coptic chant** it produces nonsense ("no, no, no…"). Ordinary speech AI can't follow Coptic.
 - The wav2vec2 sound model hears only **2.3 sounds/s** (normal speech has about 10–12). The recording has almost no treble: the band above 3 kHz is 29 dB below the average level, and consonants live there. Spotting 12 well-known responses (`spot.py`) did no better than reversed or shuffled controls. **This recording is too degraded to follow.**
-- Next: a 2011 digital recording (Fr. Ishak Shokry), with only a 10–16 dB treble gap.
+
+**tasbeha.org timed hymns: Liturgy of St. Basil in Coptic (Higher Institute of Coptic Studies)**
+
+21 sections, 71 min, 277 Coptic lines, each timed against the recording by the site (`tasbeha_service.py`).
+
+| Measure | Result |
+|---|---|
+| exact line shown | 27% |
+| right line or a neighbour | 53% |
+| **Creed (recited fast, 4.9 sounds/s)** | **99% within one line, 100% right hymn** |
+| Pi-nishti, Aspasmos Adam, Evshes (moderate chant, 0.8–1.5 sounds/s) | 54–97% within one line, 75–100% right hymn |
+| long melismatic chants (Tay-shory, Sotees Amen, Alleluia; 0.2–0.4 sounds/s) | 0% |
+
+**Conclusion.** Sound matching follows *spoken and lightly chanted* Coptic well. Long melismatic hymns hold single vowels for many seconds, so there are almost no sounds to match. Those need a different method: match the *melody* of the live audio against reference recordings of the same hymn (chroma features + dynamic time warping, as in music score-following). tasbeha.org has timed reference recordings by several cantors.
+
+## German with real voices (Multilingual LibriSpeech, `make_reading_test.py`)
+
+Book = 241 passages read aloud by real people; service = 40 passages in order (10.6 min) with one skipped section, plus hall echo and noise.
+
+| Method | Right passage shown | Lock-on |
+|---|---|---|
+| words (Whisper-small + the app's `src/matcher.js`, `track_words.mjs`) | **94%** | median 1 s, all 40 found |
+| sounds (wav2vec2 + `track.py`), clean | 90% | median 1 s, all 40 found |
+| sounds, hall echo + noise | 90% | median 1 s, all 40 found |
+
+German can be followed reliably. English uses the same path (`phonetics.py` already supports `en`).
 
 ## Run
 
