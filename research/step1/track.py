@@ -110,12 +110,17 @@ def main():
     ap.add_argument('--no-bias', action='store_true')
     ap.add_argument('--phones', help='cache file for recognized sounds')
     ap.add_argument('--verbose', action='store_true')
+    ap.add_argument('--model', choices=['allosaurus', 'w2v'], default='allosaurus')
     a = ap.parse_args()
     truth = json.load(open(a.truth))
     try:
         phones = [tuple(x) for x in json.load(open(a.phones))]
     except (TypeError, FileNotFoundError):
-        phones = recognize(a.audio)
+        if a.model == 'w2v':
+            from recognize_w2v import recognize as rec_w2v
+            phones = rec_w2v(a.audio)
+        else:
+            phones = recognize(a.audio)
         if a.phones:
             json.dump(phones, open(a.phones, 'w'))
     book = Book(BOOK, vowels=not a.no_vowels)
