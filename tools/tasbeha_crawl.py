@@ -82,8 +82,12 @@ def parse(page):
     tm = re.search(r'data-timings="([^"]+)"', page)
     timing = {t['idx']: t for t in json.loads(html.unescape(tm.group(1)))} if tm else {}
     lines = []
-    for m in re.finditer(r'<div class="sync-line row" data-idx="(\d+)"([\s\S]*?)<div class="sync-progress"', page):
-        idx, body = int(m.group(1)), m.group(2)
+    # each line runs until the next line starts (timed pages add a progress bar, untimed don't)
+    starts = list(re.finditer(r'<div class="sync-line row" data-idx="(\d+)"', page))
+    for k, m in enumerate(starts):
+        idx = int(m.group(1))
+        body = page[m.end(): starts[k + 1].start() if k + 1 < len(starts) else len(page)]
+        body = body.split('<div class="sync-progress"')[0]
         cop = ' '.join(text_of(w) for w in re.findall(r'<span class="w sync-coptic[^>]*>([\s\S]*?)</span>', body))
         lat = ' '.join(text_of(w) for w in re.findall(r'<span class="w sync-translit[^>]*>([\s\S]*?)</span>', body))
         en = re.search(r'<div class="sync-english">([\s\S]*?)</div>', body)
@@ -99,7 +103,7 @@ def build(hymns, out: Path):
     out.mkdir(parents=True, exist_ok=True)
     books, timings = {}, {}
     for hid, h in hymns.items():
-        group = h['path'][1] if len(h['path']) > 1 else (h['path'][0] if h['path'] else 'Other')
+        group = ' › '.join(h['path'][:2]) or 'Other'
         paras, role = books.setdefault(group, []), None
         first = True
         for ln in h['lines']:
@@ -143,7 +147,7 @@ def main(cache, out):
     print(f'  {len(views)} hymns')
     print('step 2: fetching hymn pages')
     hymns = {}
-    for i, (hid, path) in enumerate(sorted(views.items(), key=lambda kv: int(kv[0]))):
+    for i, (hid, path) in enumerate(views.items()):  # site order ~ service order
         h = parse(get(BASE + path, cache))
         if h and h['lines']:
             hymns[hid] = h
