@@ -3,9 +3,7 @@
 # Phone: open the Pages address in Chrome, then menu > "Install app".
 name: Publish app
 on:
-  push:
-    branches: [ccr-d1b0a694-toumms]
-  workflow_dispatch:
+  workflow_dispatch: # manual: the Android app is the main way to use it
 permissions:
   contents: read
   pages: write

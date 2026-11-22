@@ -68,6 +68,7 @@ main { padding: 4px 8px 55vh; font-size: var(--font); line-height: 1.55; }
 
 .section { margin: 1.4em 4px .3em; padding: .35em 4px; color: var(--gold); border-bottom: 1px solid var(--line); font-size: .95em; font-weight: 700; }
 .section .col-cop { font-family: var(--coptic); }
+.section.single .cell { grid-column: 1 / -1; text-align: center; font-family: var(--serif), var(--coptic); }
 .section .col-ar { font-family: var(--arabic); text-align: right; }
 
 .para {

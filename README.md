@@ -15,11 +15,17 @@ An app for church: it **listens to the service and shows you where you are in th
 |---|---|
 | ![](docs/phone-portrait.png) | ![](docs/phone-landscape-de.png) |
 
-## Try it on your phone (Android)
+## Install the Android app
 
-1. One-time setup on github.com: **Settings → Pages → Source: "GitHub Actions"**. Every push then publishes the app to **https://petermhanna.github.io/Coptic-AI-Reader/**.
-2. On the phone, open that address in **Chrome**, then ⋮ → **Install app** (or *Add to Home screen*).
-3. It opens full screen like an app, works offline after the first visit, and keeps the screen awake while listening. Tap **Listen** and allow the microphone, or ▶ for a demo.
+1. On your phone, open **https://github.com/PetermHanna/Coptic-AI-Reader/releases/tag/app-latest** and download **CopticReader.apk** (about 380 MB, mostly the Coptic AI).
+2. Open the download. Android asks to allow installing from this source: allow it, then **Install**.
+3. Open **Coptic Reader**, pick a book in ⚙, set **The priest is speaking** to the language, and tap **Listen**:
+   - **Coptic (sound AI)**: the AI model inside the app listens and follows the Coptic text by sound, fully on the phone, without internet. The first start takes a few seconds to prepare the model.
+   - **Arabic / Deutsch / English**: Android's own speech recognizer follows the words.
+
+Every push rebuilds the app (`.github/workflows/android.yml`) and replaces the release. New versions install over the old one.
+
+**How the app is built** (`android/`): a native Kotlin app. Its screen is the same three-column book view (`index.html`, `src/`), bundled inside the app. Native parts: `CopticListener.kt` (microphone → 5 s window → wav2vec2 phoneme model via ONNX Runtime → sounds → `src/sounds.js` finds them in the Coptic text) and `WordListener.kt` (Android speech recognizer). The model is converted by `tools/export_model.py` (facebook/wav2vec2-xlsr-53-espeak-cv-ft, Apache-2.0, 8-bit, ~320 MB).
 
 ## Books
 

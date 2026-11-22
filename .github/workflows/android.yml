@@ -1,0 +1,70 @@
+# Builds the Android app (with the Coptic AI model inside) and publishes it
+# on the repository's Releases page as "Coptic Reader (latest)".
+# On the phone: open the release page, download CopticReader.apk, install.
+name: Android app
+on:
+  push:
+    branches: [ccr-d1b0a694-toumms]
+    paths: ['android/**', 'src/**', 'books/**', 'fonts/**', 'icons/**', 'index.html', 'tools/export_model.py', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      # The AI model (~320 MB) is converted once, then reused from the cache.
+      - name: Reuse converted model
+        id: model
+        uses: actions/cache@v4
+        with:
+          path: android/model
+          key: coptic-model-${{ hashFiles('tools/export_model.py') }}
+      - name: Convert the model (first build only)
+        if: steps.model.outputs.cache-hit != 'true'
+        run: |
+          python3 -m pip install --quiet torch --index-url https://download.pytorch.org/whl/cpu
+          python3 -m pip install --quiet transformers onnx onnxruntime onnxscript
+          python3 tools/export_model.py android/model
+          ls -la android/model
+
+      # Same signing key every build, so a new version installs over the old one.
+      - name: Reuse signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: coptic-reader-signing-key-v1
+      - name: Create signing key (first build only)
+        run: |
+          mkdir -p ~/.android
+          [ -f ~/.android/debug.keystore ] || keytool -genkeypair -v -keystore ~/.android/debug.keystore \
+            -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 \
+            -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Build the app
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk ../CopticReader.apk
+          ls -la ../CopticReader.apk
+
+      - name: Publish on the Releases page
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete app-latest --yes --cleanup-tag || true
+          gh release create app-latest CopticReader.apk \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Coptic Reader (latest)" \
+            --notes "Android app, build ${GITHUB_RUN_NUMBER}. Download CopticReader.apk on your phone and open it to install (allow installing from this source when Android asks). The Coptic AI runs on the phone and works offline."

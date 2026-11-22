@@ -1,4 +1,5 @@
 import { Matcher, tokenize } from './matcher.js';
+import { SoundTracker } from './sounds.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -19,7 +20,7 @@ const settings = Object.assign(
 );
 const save = () => localStorage.setItem('reader-settings', JSON.stringify(settings));
 
-let book, matcher, recognition, listening = false, wakeLock = null, demoTimer = null;
+let book, matcher, soundTracker, recognition, listening = false, wakeLock = null, demoTimer = null;
 let cells = [];          // cells[para] = { west, cop, ar } -> { el, key, spans }
 let autoFollow = true;   // false while the user scrolls away by hand
 
@@ -78,7 +79,16 @@ function renderBook() {
   cells = [];
   const cols = columns();
   book.paragraphs.forEach((p, pi) => {
-    if (p.section) {
+    // a title in only one language is shown once, across all columns
+    if (p.section && (typeof p.section === 'string' || Object.keys(p.section).filter((k) => k !== 'path').length < 2)) {
+      const h = document.createElement('div');
+      h.className = 'row section single';
+      const c = document.createElement('div');
+      c.className = 'cell';
+      c.textContent = localized(p.section, 'en');
+      h.append(c);
+      main.append(h);
+    } else if (p.section) {
       const h = document.createElement('div');
       h.className = 'row section';
       for (const col of cols) {
@@ -94,7 +104,7 @@ function renderBook() {
     const row = document.createElement('div');
     row.className = 'row para';
     row.id = `p-${pi}`;
-    row.onclick = () => { matcher.jumpTo(pi); autoFollow = true; highlight({ para: pi }, true); };
+    row.onclick = () => { matcher.jumpTo(pi); soundTracker.jumpTo(pi); autoFollow = true; highlight({ para: pi }, true); };
     cells[pi] = {};
     for (const col of cols) {
       const key = keyFor(col, p);
@@ -206,6 +216,7 @@ function onHeard(text, languages = MATCH_LANGS[settings.speechLang]) {
   $('heard').classList.toggle('show', !!text);
   const r = matcher.locate(text, { languages });
   if (r) {
+    soundTracker.jumpTo(r.para);
     highlight(r);
     setStatus(`Following · ${Math.round(Math.min(r.score, 1) * 100)}% sure`);
   }
@@ -230,8 +241,36 @@ function setStatus(s) { $('status').textContent = s; }
 // Free speech recognition built into Chrome / Android / Safari.
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
+// Inside the Android app, `Native` (MainActivity) provides the listeners:
+// Android's speech recognizer for Arabic/German/English, and the on-phone
+// AI sound model for Coptic. It calls back the functions below.
+const NATIVE = window.Native;
+window.nativeHeard = (text) => heardLater(text);
+window.nativeSounds = (json) => {
+  const phones = JSON.parse(json);
+  $('heard').textContent = '♪ ' + phones.join('');
+  $('heard').classList.toggle('show', phones.length > 0);
+  const r = soundTracker.locate(phones);
+  if (r) {
+    matcher.jumpTo(r.para);
+    highlight({ para: r.para });
+    setStatus('Following the Coptic by sound');
+  }
+};
+window.nativeStatus = (msg) => setStatus(msg);
+window.nativeStopped = (msg) => { if (listening) { stopListening(); if (msg) setStatus(msg); } };
+
 function startListening() {
   stopDemo();
+  if (NATIVE) {
+    NATIVE.start(settings.speechLang);
+    listening = true;
+    $('listen').setAttribute('aria-pressed', 'true');
+    $('listenLabel').textContent = 'Stop';
+    setStatus(settings.speechLang === 'cop' ? 'Listening for Coptic…' : 'Listening…');
+    return;
+  }
+  if (settings.speechLang === 'cop') { setStatus('Coptic by sound works in the Android app.'); return; }
   if (!SR) { setStatus('No speech recognition in this browser. Use Chrome on Android.'); return; }
   recognition = new SR();
   recognition.lang = settings.speechLang;
@@ -261,6 +300,7 @@ function startListening() {
 
 function stopListening() {
   listening = false;
+  NATIVE?.stop();
   recognition?.stop();
   recognition = null;
   wakeLock?.release();
@@ -340,6 +380,7 @@ document.addEventListener('visibilitychange', () => {
 function loadBook(data) {
   book = data;
   matcher = new Matcher(book);
+  soundTracker = new SoundTracker(book);
   $('bookTitle').textContent = book.title || 'Coptic AI Reader';
   renderBook();
 }
@@ -377,6 +418,6 @@ $('bookSelect').value = startBook;
 await openBook(startBook);
 
 // Offline support (only on https or localhost; ignored elsewhere)
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+if (!window.Native && 'serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
