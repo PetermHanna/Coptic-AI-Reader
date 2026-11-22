@@ -75,6 +75,8 @@ main { padding: 4px 8px 55vh; font-size: var(--font); line-height: 1.55; }
   cursor: pointer; opacity: .55; transition: opacity .35s, background .35s, border-color .35s;
 }
 .para:hover { opacity: .8; }
+/* let the phone skip layout of rows that are off screen (big books) */
+.para, .section { content-visibility: auto; contain-intrinsic-size: auto 120px; }
 .para.current { opacity: 1; background: var(--gold-soft); border-color: var(--gold); box-shadow: 0 0 0 1px rgba(227,180,86,.25), 0 6px 24px rgba(0,0,0,.35); }
 .cell { min-width: 0; overflow-wrap: anywhere; }
 .cell.key-cop { font-family: var(--coptic); font-size: .96em; }

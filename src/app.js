@@ -107,21 +107,13 @@ function renderBook() {
         r.textContent = localized(book.roles[p.role], colLang(col));
         cell.append(r);
       }
-      const spans = [];
       const body = document.createElement('div');
       body.className = 'text';
-      for (const w of (p.text[key] || '').split(/(\s+)/)) {
-        if (!w.trim()) { body.append(w); continue; }
-        const span = document.createElement('span');
-        span.textContent = w;
-        body.append(span);
-        // one shown word can be several matcher tokens ("Lord's" -> lord, s)
-        for (let i = 0; i < Math.max(1, tokenize(w).length); i++) spans.push(span);
-      }
+      body.textContent = p.text[key] || '';
       if (!p.text[key]) body.classList.add('empty');
       cell.append(body);
       row.append(cell);
-      cells[pi][col] = { key, spans };
+      cells[pi][col] = { key, body, spans: null };
     }
     main.append(row);
   });
@@ -130,6 +122,23 @@ function renderBook() {
 }
 
 // ---------- highlighting ----------
+
+// Split a cell's text into word spans only when needed (keeps big books light).
+function wordSpans(c) {
+  if (c.spans) return c.spans;
+  const spans = [];
+  const text = c.body.textContent;
+  c.body.textContent = '';
+  for (const w of text.split(/(\s+)/)) {
+    if (!w.trim()) { c.body.append(w); continue; }
+    const span = document.createElement('span');
+    span.textContent = w;
+    c.body.append(span);
+    // one shown word can be several matcher tokens ("Lord's" -> lord, s)
+    for (let i = 0; i < Math.max(1, tokenize(w).length); i++) spans.push(span);
+  }
+  return (c.spans = spans);
+}
 
 function highlight({ para, lang, idx }, instant = false) {
   document.querySelectorAll('.para.current').forEach((e) => e.classList.remove('current'));
@@ -140,7 +149,10 @@ function highlight({ para, lang, idx }, instant = false) {
   // mark the word in whichever column shows the text that was matched
   if (lang) {
     for (const c of Object.values(cells[para] || {})) {
-      if (c.key === lang && c.spans[idx]) c.spans[idx].classList.add('word-now');
+      if (c.key === lang) {
+        const spans = wordSpans(c);
+        if (spans[idx]) spans[idx].classList.add('word-now');
+      }
     }
   }
   if (autoFollow) scrollToRow(row, instant);
@@ -148,12 +160,25 @@ function highlight({ para, lang, idx }, instant = false) {
 }
 
 function scrollToRow(row, instant) {
-  const top = row.getBoundingClientRect().top + window.scrollY;
-  const offset = $('topbar').offsetHeight + $('colhead').offsetHeight + window.innerHeight * 0.18;
+  // Off-screen rows only have estimated heights, so: jump (or glide if near),
+  // then correct twice once the rows around the target are really laid out.
+  const target = () => {
+    const top = row.getBoundingClientRect().top + window.scrollY;
+    const offset = $('topbar').offsetHeight + $('colhead').offsetHeight + window.innerHeight * 0.18;
+    return Math.max(0, top - offset);
+  };
+  const far = Math.abs(target() - window.scrollY) > window.innerHeight * 2;
   programmaticScroll = true;
-  window.scrollTo({ top: Math.max(0, top - offset), behavior: instant ? 'auto' : 'smooth' });
-  clearTimeout(scrollTimer);
-  scrollTimer = setTimeout(() => (programmaticScroll = false), 900);
+  window.scrollTo({ top: target(), behavior: instant || far ? 'auto' : 'smooth' });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (far) window.scrollTo({ top: target(), behavior: 'auto' });
+    setTimeout(() => {
+      if (far) window.scrollTo({ top: target(), behavior: 'auto' });
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => (programmaticScroll = false), 700);
+    }, 120);
+  }));
+  $('backToCurrent').hidden = true;
 }
 
 // If the user scrolls by hand, stop auto-scrolling until they ask for it again.
@@ -186,6 +211,20 @@ function onHeard(text, languages = MATCH_LANGS[settings.speechLang]) {
   }
 }
 
+// The recognizer sends partial results many times a second: search at most
+// every 350 ms, always with the newest words, so a slow phone never falls behind.
+let pendingText = null, searchTimer = null;
+function heardLater(text) {
+  pendingText = text;
+  if (searchTimer) return;
+  searchTimer = setTimeout(() => {
+    searchTimer = null;
+    const t = pendingText;
+    pendingText = null;
+    if (t) onHeard(t);
+  }, 350);
+}
+
 function setStatus(s) { $('status').textContent = s; }
 
 // Free speech recognition built into Chrome / Android / Safari.
@@ -206,7 +245,7 @@ function startListening() {
       else interim += ' ' + e.results[i][0].transcript;
     }
     finalText = finalText.split(/\s+/).slice(-30).join(' ');
-    onHeard((finalText + interim).trim());
+    heardLater((finalText + interim).trim());
   };
   recognition.onerror = (e) => {
     if (e.error === 'not-allowed') { stopListening(); setStatus('Microphone permission was denied.'); }

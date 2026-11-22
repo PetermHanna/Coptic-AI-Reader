@@ -15,6 +15,19 @@ An app for church: it **listens to the service and shows you where you are in th
 |---|---|
 | ![](docs/phone-portrait.png) | ![](docs/phone-landscape-de.png) |
 
+## Try it on your phone (Android)
+
+1. One-time setup on github.com: **Settings → Pages → Source: "GitHub Actions"**. Every push then publishes the app to **https://petermhanna.github.io/Coptic-AI-Reader/**.
+2. On the phone, open that address in **Chrome**, then ⋮ → **Install app** (or *Add to Home screen*).
+3. It opens full screen like an app, works offline after the first visit, and keeps the screen awake while listening. Tap **Listen** and allow the microphone, or ▶ for a demo.
+
+## Books
+
+- `books/sample.json`: a short sample in English, **German**, Coptic and Arabic.
+- `books/tasbeha/`: **772 hymns and responses, about 19,000 lines**, in Coptic, Coptic in Latin letters, English and Arabic. Collected from the tasbeha.org hymn library with `tools/tasbeha_crawl.py` (credit: tasbeha.org) and grouped by season and service: Psalmody, the Divine Liturgy, Raising of Incense, Kiahk, Holy Pascha Week, the feasts, Great Lent, Matrimony and more. Pick a book in ⚙ settings. These books have no German, so the third column falls back to English.
+
+![Divine Liturgy on a phone, following the Creed](docs/phone-liturgy.png)
+
 ## Cost: free
 
 - **Speech recognition**: the browser's built-in Web Speech API (Chrome, Edge, Safari, Android, iPhone). No API key, no server, no fees.

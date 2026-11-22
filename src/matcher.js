@@ -72,7 +72,49 @@ export class Matcher {
         tokenize(text).forEach((word, idx) => s.push({ word, para: pi, idx }));
       }
     });
+    // Index of word pieces (letter trigrams) -> positions, so a big book can be
+    // searched without comparing against every position. Pieces, not whole
+    // words, keep the search tolerant of misheard and transliterated words.
+    this.index = {};
+    for (const [lang, s] of Object.entries(this.streams)) {
+      const idx = (this.index[lang] = new Map());
+      s.forEach((t, pos) => {
+        for (const g of trigrams(t.word).keys()) {
+          let list = idx.get(g);
+          if (!list) idx.set(g, (list = []));
+          list.push(pos);
+        }
+      });
+    }
     this.current = { para: 0, lang: null, idx: 0 };
+  }
+
+  // First stream position whose paragraph is >= para (streams are in book order).
+  firstAt(s, para) {
+    let lo = 0, hi = s.length;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (s[mid].para < para) lo = mid + 1; else hi = mid;
+    }
+    return lo;
+  }
+
+  // Likely window starts for the query words, by votes of shared word pieces.
+  candidates(lang, words, max = 300) {
+    const s = this.streams[lang], idx = this.index[lang];
+    const cap = Math.max(200, s.length / 20); // ignore pieces that are everywhere
+    const votes = new Map();
+    words.forEach((w, k) => {
+      for (const g of trigrams(w).keys()) {
+        const list = idx.get(g);
+        if (!list || list.length > cap) continue;
+        for (const pos of list) {
+          const start = pos - k;
+          if (start >= 0) votes.set(start, (votes.get(start) || 0) + 1);
+        }
+      }
+    });
+    return [...votes.entries()].sort((a, b) => b[1] - a[1]).slice(0, max).map(([start]) => start);
   }
 
   languages() {
@@ -86,14 +128,22 @@ export class Matcher {
     const qGrams = trigrams(words.join(' '));
     const langs = languages?.length ? languages : this.languages();
 
-    const scan = (from, to) => {
+    // Score windows starting at the given positions (all of a range, or index candidates).
+    const scan = (from, to, useIndex = false) => {
       let best = null;
       for (const lang of langs) {
         const s = this.streams[lang];
         if (!s) continue;
-        for (let i = 0; i < s.length; i++) {
-          const p = s[i].para;
-          if (p < from || p > to) continue;
+        let starts;
+        if (useIndex) {
+          const set = new Set();
+          for (const c of this.candidates(lang, words)) for (const d of [-1, 0, 1]) set.add(c + d);
+          starts = [...set].filter((i) => i >= 0 && i < s.length);
+        } else {
+          starts = [];
+          for (let i = this.firstAt(s, from); i < s.length && s[i].para <= to; i++) starts.push(i);
+        }
+        for (const i of starts) {
           // compare windows of similar length (± 2 words for dropped/extra words)
           for (const len of [words.length - 1, words.length, words.length + 1]) {
             if (len < 1 || i + len > s.length) continue;
@@ -119,7 +169,7 @@ export class Matcher {
     // Only skip the whole-book search when the nearby match is near-perfect:
     // repeated prayers (e.g. the Trisagion verses) look "good" but differ at the end.
     if (!best || best.score - this.opts.localBonus < 0.9) {
-      const global = scan(0, this.paragraphs.length - 1);
+      const global = scan(0, this.paragraphs.length - 1, true);
       if (global && (!best || global.score > best.score)) best = global;
     }
     if (!best || best.score < this.opts.minScore) return null;
