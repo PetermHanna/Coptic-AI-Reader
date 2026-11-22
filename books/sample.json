@@ -1,0 +1,70 @@
+{
+  "title": "Sample Prayers",
+  "languages": {
+    "en": "English",
+    "cop": "Coptic",
+    "cop_lat": "Coptic (English letters)",
+    "cop_ar": "قبطي معرب",
+    "ar": "عربي"
+  },
+  "paragraphs": [
+    { "id": "lp-title", "section": "The Lord's Prayer", "text": {
+      "en": "The Lord's Prayer", "ar": "الصلاة الربانية" } },
+    { "id": "lp-1", "text": {
+      "en": "Our Father who art in heaven, hallowed be Thy name.",
+      "cop": "Ⲡⲉⲛⲓⲱⲧ ⲉⲧϧⲉⲛ ⲛⲓⲫⲏⲟⲩⲓ: ⲙⲁⲣⲉϥⲧⲟⲩⲃⲟ ⲛ̀ϫⲉ ⲡⲉⲕⲣⲁⲛ.",
+      "cop_lat": "Peniot et khen nifiowi, marefto-vo enje pekran.",
+      "cop_ar": "بينيوت إت خين ني فيئوي ماريف طوفو إنجي بيك ران",
+      "ar": "أبانا الذي في السماوات، ليتقدس اسمك." } },
+    { "id": "lp-2", "text": {
+      "en": "Thy kingdom come. Thy will be done on earth as it is in heaven.",
+      "cop": "ⲙⲁⲣⲉⲥⲓ̀ ⲛ̀ϫⲉ ⲧⲉⲕⲙⲉⲧⲟⲩⲣⲟ: ⲡⲉⲧⲉϩⲛⲁⲕ ⲙⲁⲣⲉϥϣⲱⲡⲓ: ⲙ̀ⲫ̀ⲣⲏϯ ϧⲉⲛ ⲧ̀ⲫⲉ ⲛⲉⲙ ϩⲓϫⲉⲛ ⲡⲓⲕⲁϩⲓ.",
+      "cop_lat": "Mares-ee enje tekmet-ouro, peteh-nak marefshopi, emefrity khen etfe nem hijen pikahi.",
+      "cop_ar": "ماريسي إنجي تيك ميت أورو بيتيه ناك ماريف شوبي إم إفريتي خين إتفي نيم هيجين بي كاهي",
+      "ar": "ليأت ملكوتك، لتكن مشيئتك، كما في السماء كذلك على الأرض." } },
+    { "id": "lp-3", "text": {
+      "en": "Give us this day our daily bread, and forgive us our trespasses, as we forgive those who trespass against us.",
+      "ar": "خبزنا الذي للغد أعطنا اليوم، واغفر لنا ذنوبنا كما نغفر نحن أيضاً للمذنبين إلينا." } },
+    { "id": "lp-4", "text": {
+      "en": "And lead us not into temptation, but deliver us from the evil one, in Christ Jesus our Lord.",
+      "ar": "ولا تدخلنا في تجربة، لكن نجنا من الشرير، بالمسيح يسوع ربنا." } },
+
+    { "id": "tri-title", "section": "The Trisagion", "text": {
+      "en": "The Trisagion", "ar": "الثلاث تقديسات" } },
+    { "id": "tri-1", "text": {
+      "en": "Holy God, Holy Mighty, Holy Immortal, who was born of the Virgin, have mercy on us.",
+      "cop_lat": "Agios o Theos, agios ischyros, agios athanatos, o ek Parthenou gennetheis, eleison imas.",
+      "cop_ar": "آجيوس أوثيئوس آجيوس إسشيروس آجيوس أثاناتوس أو إك بارثينو جينيثيس إليسون إيماس",
+      "ar": "قدوس الله، قدوس القوي، قدوس الحي الذي لا يموت، الذي وُلد من العذراء، ارحمنا." } },
+    { "id": "tri-2", "text": {
+      "en": "Holy God, Holy Mighty, Holy Immortal, who was crucified for us, have mercy on us.",
+      "cop_lat": "Agios o Theos, agios ischyros, agios athanatos, o stavrotheis di imas, eleison imas.",
+      "cop_ar": "آجيوس أوثيئوس آجيوس إسشيروس آجيوس أثاناتوس أو ستافروثيس ذي إيماس إليسون إيماس",
+      "ar": "قدوس الله، قدوس القوي، قدوس الحي الذي لا يموت، الذي صُلب عنا، ارحمنا." } },
+    { "id": "tri-3", "text": {
+      "en": "Holy God, Holy Mighty, Holy Immortal, who rose from the dead and ascended into the heavens, have mercy on us.",
+      "cop_lat": "Agios o Theos, agios ischyros, agios athanatos, o anastas ek ton nekron ke anelthon is tous ouranous, eleison imas.",
+      "cop_ar": "آجيوس أوثيئوس آجيوس إسشيروس آجيوس أثاناتوس أو أنستاس إك تون نيكرون كي أنيلثون إيس توس أورانوس إليسون إيماس",
+      "ar": "قدوس الله، قدوس القوي، قدوس الحي الذي لا يموت، الذي قام من الأموات وصعد إلى السماوات، ارحمنا." } },
+
+    { "id": "ps50-title", "section": "Psalm 50 (51)", "text": {
+      "en": "Psalm 50", "ar": "المزمور الخمسون" } },
+    { "id": "ps50-1", "text": {
+      "en": "Have mercy upon me, O God, according to Thy lovingkindness: according unto the multitude of Thy tender mercies blot out my transgressions.",
+      "ar": "ارحمني يا الله حسب رحمتك. حسب كثرة رأفتك امحُ معاصيَّ." } },
+    { "id": "ps50-2", "text": {
+      "en": "Wash me thoroughly from mine iniquity, and cleanse me from my sin.",
+      "ar": "اغسلني كثيراً من إثمي، ومن خطيتي طهرني." } },
+    { "id": "ps50-3", "text": {
+      "en": "For I acknowledge my transgressions: and my sin is ever before me.",
+      "ar": "لأني عارف بمعاصيَّ، وخطيتي أمامي دائماً." } },
+
+    { "id": "glory-title", "section": "Doxology", "text": {
+      "en": "Glory Be", "ar": "تمجيد" } },
+    { "id": "glory-1", "text": {
+      "en": "Glory be to the Father and to the Son and to the Holy Spirit, now and ever and unto the ages of all ages. Amen.",
+      "cop_lat": "Doxa Patri ke Ioh ke Agio Pnevmati, ke nyn ke a-ee ke is tous e-onas ton e-onon. Amin.",
+      "cop_ar": "ذوكصا باتري كي إيو كي آجيو إبنيفماتي كي نين كي آ إي كي إيس توس إي أوناس طون إي أونون آمين",
+      "ar": "المجد للآب والابن والروح القدس، الآن وكل أوان وإلى دهر الدهور. آمين." } }
+  ]
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#1b1410" />
+  <title>Coptic AI Reader</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="src/style.css" />
+</head>
+<body>
+  <header>
+    <div class="row">
+      <button id="listen" class="primary">🎤 Start listening</button>
+      <label>Service language
+        <select id="speechLang">
+          <option value="en-US">English</option>
+          <option value="ar-EG">Arabic / Coptic</option>
+        </select>
+      </label>
+      <label>Text size
+        <input id="fontSize" type="range" min="14" max="34" value="20" />
+      </label>
+      <label class="file">📖 Open book…
+        <input id="bookFile" type="file" accept=".json,application/json" hidden />
+      </label>
+    </div>
+    <div class="row" id="columns"></div>
+    <div class="row status">
+      <span id="status">Tap “Start listening” when the service begins.</span>
+      <span id="heard" dir="auto"></span>
+    </div>
+    <details>
+      <summary>Test without a microphone</summary>
+      <form id="simForm" class="row">
+        <input id="simText" dir="auto" placeholder="Type a few words from the book, e.g. “forgive us our trespasses”" />
+        <button>Find</button>
+      </form>
+    </details>
+  </header>
+  <main id="book"></main>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
