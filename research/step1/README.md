@@ -22,6 +22,14 @@ With wav2vec2, every row is found within 1–3 s, including the German and Arabi
 
 **Caveat.** This is synthetic speech, and the Coptic audio was generated from the same pronunciation rules used for matching, which flatters the result. **The real test is a recording of an actual service**, which is the next step.
 
+## Real recordings (archangelmichaelchurch.net audio library)
+
+**St. Gregory Liturgy, Fr. Sidrak Ibrahim, part 1 (57 min, old cassette transfer)**
+
+- Whisper (free speech AI) transcribes the **Arabic** parts well, e.g. the Gospel at 20:00 and the Prayer of Reconciliation at 30:00. On **Coptic chant** it produces nonsense ("no, no, no…"). Ordinary speech AI can't follow Coptic.
+- The wav2vec2 sound model hears only **2.3 sounds/s** (normal speech has about 10–12). The recording has almost no treble: the band above 3 kHz is 29 dB below the average level, and consonants live there. Spotting 12 well-known responses (`spot.py`) did no better than reversed or shuffled controls. **This recording is too degraded to follow.**
+- Next: a 2011 digital recording (Fr. Ishak Shokry), with only a 10–16 dB treble gap.
+
 ## Run
 
 ```bash
