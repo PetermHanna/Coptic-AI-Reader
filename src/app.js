@@ -33,15 +33,21 @@ function columns() {
   return cols;
 }
 
+// Third column language: the chosen one, or English if the book lacks it.
+function third() {
+  const has = (l) => book?.languages?.[l] || book?.paragraphs?.some((p) => p.text[l]);
+  return has(settings.thirdLang) ? settings.thirdLang : 'en';
+}
+
 // Which text key is shown in a column for paragraph p.
 function keyFor(col, p) {
-  if (col === 'west') return settings.thirdLang;
+  if (col === 'west') return third();
   if (col === 'ar') return 'ar';
   const order = [settings.copticScript, ...COPTIC_KEYS.filter((k) => k !== settings.copticScript)];
   return order.find((k) => p.text[k]) || settings.copticScript;
 }
 
-const colLang = (col) => (col === 'west' ? settings.thirdLang : col);
+const colLang = (col) => (col === 'west' ? third() : col);
 const isRtl = (key) => key === 'ar' || key === 'cop_ar';
 
 function localized(obj, lang) {
@@ -57,6 +63,7 @@ function renderHeader() {
     const d = document.createElement('div');
     d.className = `cell col-${col}`;
     d.textContent = COLUMN_NAMES[colLang(col)];
+    if (col === 'west' && third() !== settings.thirdLang) d.textContent += ` (no ${COLUMN_NAMES[settings.thirdLang]} in this book)`;
     if (col === 'ar') d.dir = 'rtl';
     head.append(d);
   }
@@ -298,5 +305,34 @@ function loadBook(data) {
   renderBook();
 }
 
+// Books: the sample plus any collected library listed in books/tasbeha/index.json
+async function listBooks() {
+  try {
+    const index = await (await fetch('books/tasbeha/index.json')).json();
+    for (const b of index) {
+      const o = document.createElement('option');
+      o.value = `books/tasbeha/${b.file}`;
+      o.textContent = `${b.title} (${b.hymns} hymns)`;
+      $('bookSelect').append(o);
+    }
+  } catch { /* no library installed: sample only */ }
+}
+
+async function openBook(url) {
+  setStatus('Opening book…');
+  try {
+    loadBook(await (await fetch(url)).json());
+    settings.book = url; save();
+    setStatus('Tap “Listen” when the service begins');
+  } catch {
+    setStatus('Could not open that book');
+  }
+}
+
+$('bookSelect').onchange = () => openBook($('bookSelect').value);
+
 applySettings();
-loadBook(await (await fetch('books/sample.json')).json());
+await listBooks();
+const startBook = [...$('bookSelect').options].some((o) => o.value === settings.book) ? settings.book : 'books/sample.json';
+$('bookSelect').value = startBook;
+await openBook(startBook);
