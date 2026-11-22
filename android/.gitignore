@@ -3,3 +3,4 @@ model/
 build/
 app/build/
 local.properties
+.kotlin/
