@@ -116,7 +116,9 @@ export class Matcher {
 
     const c = this.current.para;
     let best = scan(c - this.opts.localBehind, c + this.opts.localAhead);
-    if (!best || best.score < this.opts.minScore + this.opts.localBonus + 0.15) {
+    // Only skip the whole-book search when the nearby match is near-perfect:
+    // repeated prayers (e.g. the Trisagion verses) look "good" but differ at the end.
+    if (!best || best.score - this.opts.localBonus < 0.9) {
       const global = scan(0, this.paragraphs.length - 1);
       if (global && (!best || global.score > best.score)) best = global;
     }

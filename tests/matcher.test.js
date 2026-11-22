@@ -34,6 +34,16 @@ test('repeated text prefers the paragraph right after the current one', () => {
   assert.equal(id(m.locate(phrase + ' who rose from')), 'tri-3');
 });
 
+test('a similar verse nearby does not hide the right one further on', () => {
+  const m = new Matcher(book);
+  assert.equal(id(m.locate('قدوس الله قدوس القوي قدوس الحي الذي لا يموت الذي صلب عنا', { languages: ['ar'] })), 'tri-2');
+});
+
+test('follows German speech', () => {
+  const m = new Matcher(book);
+  assert.equal(id(m.locate('unser tägliches brot gib uns heute und vergib uns', { languages: ['de'] })), 'lp-3');
+});
+
 test('unrelated speech does not move the position', () => {
   const m = new Matcher(book);
   assert.equal(m.locate('please turn off your mobile phones before we start'), null);

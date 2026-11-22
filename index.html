@@ -2,43 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#1b1410" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#17110d" />
   <title>Coptic AI Reader</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="stylesheet" href="src/style.css" />
 </head>
 <body>
-  <header>
-    <div class="row">
-      <button id="listen" class="primary">🎤 Start listening</button>
-      <label>Service language
-        <select id="speechLang">
-          <option value="en-US">English</option>
-          <option value="ar-EG">Arabic / Coptic</option>
-        </select>
-      </label>
-      <label>Text size
-        <input id="fontSize" type="range" min="14" max="34" value="20" />
-      </label>
-      <label class="file">📖 Open book…
-        <input id="bookFile" type="file" accept=".json,application/json" hidden />
-      </label>
+  <header id="topbar">
+    <button id="listen" class="listen" aria-pressed="false">
+      <span class="dot"></span><span id="listenLabel">Listen</span>
+    </button>
+    <div class="title">
+      <div id="bookTitle">Coptic AI Reader</div>
+      <div id="status" class="status">Tap “Listen” when the service begins</div>
     </div>
-    <div class="row" id="columns"></div>
-    <div class="row status">
-      <span id="status">Tap “Start listening” when the service begins.</span>
-      <span id="heard" dir="auto"></span>
-    </div>
-    <details>
-      <summary>Test without a microphone</summary>
-      <form id="simForm" class="row">
-        <input id="simText" dir="auto" placeholder="Type a few words from the book, e.g. “forgive us our trespasses”" />
-        <button>Find</button>
-      </form>
-    </details>
+    <button id="demo" class="icon" title="Demo: play through the book">▶</button>
+    <button id="menu" class="icon" title="Settings" aria-expanded="false">⚙</button>
   </header>
+
+  <section id="settings" hidden>
+    <label>Third column
+      <select id="thirdLang">
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
+    </label>
+    <label>Coptic written in
+      <select id="copticScript">
+        <option value="cop">Coptic letters · Ⲁⲃⲅ</option>
+        <option value="cop_lat">Latin letters · Abg</option>
+        <option value="cop_ar">Arabic letters · أبج</option>
+      </select>
+    </label>
+    <label>The priest is speaking
+      <select id="speechLang">
+        <option value="ar-EG">Arabic / Coptic</option>
+        <option value="de-DE">Deutsch</option>
+        <option value="en-US">English</option>
+      </select>
+    </label>
+    <label>Text size
+      <input id="fontSize" type="range" min="12" max="32" value="17" />
+    </label>
+    <label class="check"><input id="showWest" type="checkbox" checked /> Show <span id="westName">English</span></label>
+    <label class="check"><input id="showCop" type="checkbox" checked /> Show Coptic</label>
+    <label class="check"><input id="showAr" type="checkbox" checked /> Show Arabic</label>
+    <label class="file">📖 Open another book…
+      <input id="bookFile" type="file" accept=".json,application/json" hidden />
+    </label>
+    <form id="simForm">
+      <input id="simText" dir="auto" placeholder="Test: type words that are being said…" />
+      <button>Find</button>
+    </form>
+  </section>
+
+  <div id="colhead" class="row head"></div>
   <main id="book"></main>
+  <div id="heard" dir="auto"></div>
+  <button id="backToCurrent" hidden>↓ Back to current</button>
+
   <script type="module" src="src/app.js"></script>
 </body>
 </html>
