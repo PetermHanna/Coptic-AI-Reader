@@ -1,4 +1,5 @@
 # Publishes the app to GitHub Pages (free https hosting) on every push.
+# One-time setup: repo Settings > Pages > Source: "GitHub Actions".
 # Phone: open the Pages address in Chrome, then menu > "Install app".
 name: Publish app
 on:
@@ -26,8 +27,6 @@ jobs:
           cp -r index.html manifest.webmanifest sw.js src fonts icons books _site/
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
