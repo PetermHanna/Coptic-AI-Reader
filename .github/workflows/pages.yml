@@ -1,0 +1,35 @@
+# Publishes the app to GitHub Pages (free https hosting) on every push.
+# Phone: open the Pages address in Chrome, then menu > "Install app".
+name: Publish app
+on:
+  push:
+    branches: [ccr-d1b0a694-toumms]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect the app files
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest sw.js src fonts icons books _site/
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -336,3 +336,8 @@ await listBooks();
 const startBook = [...$('bookSelect').options].some((o) => o.value === settings.book) ? settings.book : 'books/sample.json';
 $('bookSelect').value = startBook;
 await openBook(startBook);
+
+// Offline support (only on https or localhost; ignored elsewhere)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
