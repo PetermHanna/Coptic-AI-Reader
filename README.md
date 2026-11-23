@@ -33,6 +33,8 @@ Work is paused. This is where things stand.
 - `books/tasbeha/` text is copied word for word from tasbeha.org (Coptic, Latin-letter Coptic, English, Arabic). But hymns are grouped and **ordered as the site's pages list them, not necessarily in the order of a real service**. A few speaker labels are merged into the end of a line, as on the source pages. These books need checking against an approved service book.
 - No German service texts exist yet (only the sample). Full German | Coptic | Arabic texts would have to come from eGohm / the Diocese of Southern Germany.
 
+**The goal is the Kholagy (Euchologion, the liturgy book): the full Liturgies of St. Basil, St. Gregory and St. Cyril with every priest, deacon and people part.** The current `books/tasbeha/` "Divine Liturgy" book is mostly the liturgy's *hymns and responses* (97 hymns, ~900 lines); it is **not** the complete Kholagy. First step when resuming: get a complete, approved Kholagy text in Coptic + Arabic + English and/or German, line-aligned, from an authorized source (e.g. the Diocese of Southern Germany / eGohm for German, or a church-approved Kholagy edition), convert it to the book format and check it line by line.
+
 **Resuming work:** see "Install the Android app" and "How the app is built" below. The AI model is not in git (320 MB). `tools/export_model.py` recreates it, and it is also inside every APK on the Releases page.
 
 ## Install the Android app
