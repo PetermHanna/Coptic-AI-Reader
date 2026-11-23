@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { Matcher, normalize } from '../src/matcher.js';
 
-const book = JSON.parse(readFileSync(new URL('../books/sample.json', import.meta.url)));
+const book = JSON.parse(readFileSync(new URL('./fixtures/sample.json', import.meta.url)));
 const id = (r) => r?.paragraph.id;
 
 test('normalize strips Arabic diacritics and hamza variants', () => {

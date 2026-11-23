@@ -112,3 +112,6 @@ main { padding: 4px 8px 55vh; font-size: var(--font); line-height: 1.55; }
   .para { padding: 8px 4px; }
   .head { padding: 6px 8px; }
 }
+
+/* rubrics: instructions in the book, not spoken */
+.rubric { display: block; margin: 8px 6px; padding: 4px 8px; color: var(--muted); font-style: italic; font-size: .88em; border-left: 2px solid var(--line); }

@@ -101,6 +101,15 @@ function renderBook() {
       }
       main.append(h);
     }
+    if (p.kind === 'rubric') { // instructions in the book, not spoken
+      const r = document.createElement('div');
+      r.className = 'row rubric';
+      r.id = `p-${pi}`;
+      r.textContent = p.text.en || '';
+      main.append(r);
+      cells[pi] = {};
+      return;
+    }
     const row = document.createElement('div');
     row.className = 'row para';
     row.id = `p-${pi}`;
@@ -402,17 +411,16 @@ function loadBook(data) {
   renderBook();
 }
 
-// Books: the sample plus any collected library listed in books/tasbeha/index.json
-async function listBooks() {
-  try {
-    const index = await (await fetch('books/tasbeha/index.json')).json();
-    for (const b of index) {
-      const o = document.createElement('option');
-      o.value = `books/tasbeha/${b.file}`;
-      o.textContent = `${b.title} (${b.hymns} hymns)`;
-      $('bookSelect').append(o);
-    }
-  } catch { /* no library installed: sample only */ }
+// Books shipped with the app (no other books are listed).
+const BOOKS = [['books/kholagy.json', 'Kholagi'], ['books/tasbeha.json', 'Tasbeha']];
+function listBooks() {
+  $('bookSelect').innerHTML = '';
+  for (const [file, name] of BOOKS) {
+    const o = document.createElement('option');
+    o.value = file;
+    o.textContent = name;
+    $('bookSelect').append(o);
+  }
 }
 
 async function openBook(url) {
@@ -429,11 +437,8 @@ async function openBook(url) {
 $('bookSelect').onchange = () => openBook($('bookSelect').value);
 
 applySettings();
-await listBooks();
-// default: the Divine Liturgy (text copied from tasbeha.org), not the unverified sample
-const options = [...$('bookSelect').options].map((o) => o.value);
-const startBook = options.includes(settings.book) ? settings.book
-  : options.find((v) => v.endsWith('tasbeha-05.json')) || 'books/sample.json';
+listBooks();
+const startBook = BOOKS.some(([f]) => f === settings.book) ? settings.book : BOOKS[0][0];
 $('bookSelect').value = startBook;
 await openBook(startBook);
 

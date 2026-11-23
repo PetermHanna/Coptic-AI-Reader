@@ -67,6 +67,7 @@ export class Matcher {
     // streams[lang] = [{ word, para, idx }]
     this.streams = {};
     book.paragraphs.forEach((p, pi) => {
+      if (p.kind === 'rubric') return; // instructions are not spoken
       for (const [lang, text] of Object.entries(p.text || {})) {
         const s = (this.streams[lang] ||= []);
         tokenize(text).forEach((word, idx) => s.push({ word, para: pi, idx }));

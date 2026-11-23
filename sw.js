@@ -5,7 +5,7 @@ const CACHE = 'reader-v1';
 const SHELL = [
   './', 'index.html', 'manifest.webmanifest', 'src/app.js', 'src/matcher.js', 'src/style.css',
   'fonts/NotoSansCoptic.woff2', 'fonts/NotoNaskhArabic-Regular.woff2', 'fonts/NotoNaskhArabic-Bold.woff2',
-  'books/sample.json', 'icons/icon-192.png', 'icons/icon-512.png',
+  'books/kholagy.json', 'books/tasbeha.json', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 
 self.addEventListener('install', (e) => {
