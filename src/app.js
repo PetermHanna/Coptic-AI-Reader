@@ -359,11 +359,28 @@ for (const id of ['showWest', 'showCop', 'showAr']) {
   $(id).onchange = () => { settings[id] = $(id).checked; save(); renderBook(); };
 }
 $('fontSize').oninput = (e) => { settings.fontSize = +e.target.value; save(); applySettings(); };
-$('menu').onclick = () => {
-  const s = $('settings');
-  s.hidden = !s.hidden;
-  $('menu').setAttribute('aria-expanded', String(!s.hidden));
+// Settings panel: opens under the real top bar; closes with ⚙, Done, a tap on
+// the book, or the phone's Back button (MainActivity calls closeSettings()).
+// Every change is saved the moment it is made.
+function syncTopbar() {
+  document.documentElement.style.setProperty('--topbar', $('topbar').offsetHeight + 'px');
+}
+function openSettings() {
+  syncTopbar();
+  $('settings').hidden = false;
+  $('menu').setAttribute('aria-expanded', 'true');
+}
+window.closeSettings = () => {
+  if ($('settings').hidden) return false;
+  $('settings').hidden = true;
+  $('menu').setAttribute('aria-expanded', 'false');
+  return true;
 };
+$('menu').onclick = () => ($('settings').hidden ? openSettings() : window.closeSettings());
+$('settingsDone').onclick = () => window.closeSettings();
+$('book').addEventListener('click', () => window.closeSettings(), true);
+window.addEventListener('resize', syncTopbar);
+syncTopbar();
 $('listen').onclick = () => (listening ? stopListening() : startListening());
 $('demo').onclick = () => (demoTimer ? stopDemo() : startDemo());
 $('simForm').onsubmit = (e) => { e.preventDefault(); onHeard($('simText').value, undefined); };
@@ -413,7 +430,10 @@ $('bookSelect').onchange = () => openBook($('bookSelect').value);
 
 applySettings();
 await listBooks();
-const startBook = [...$('bookSelect').options].some((o) => o.value === settings.book) ? settings.book : 'books/sample.json';
+// default: the Divine Liturgy (text copied from tasbeha.org), not the unverified sample
+const options = [...$('bookSelect').options].map((o) => o.value);
+const startBook = options.includes(settings.book) ? settings.book
+  : options.find((v) => v.endsWith('tasbeha-05.json')) || 'books/sample.json';
 $('bookSelect').value = startBook;
 await openBook(startBook);
 

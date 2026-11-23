@@ -25,7 +25,7 @@
 
   <section id="settings" hidden>
     <label>Book
-      <select id="bookSelect"><option value="books/sample.json">Sample Prayers</option></select>
+      <select id="bookSelect"><option value="books/sample.json">Sample (unverified test text)</option></select>
     </label>
     <label>Third column
       <select id="thirdLang">
@@ -57,6 +57,7 @@
     <label class="file">📖 Open another book…
       <input id="bookFile" type="file" accept=".json,application/json" hidden />
     </label>
+    <button id="settingsDone" type="button" class="done">✓ Done</button>
     <form id="simForm">
       <input id="simText" dir="auto" placeholder="Test: type words that are being said…" />
       <button>Find</button>

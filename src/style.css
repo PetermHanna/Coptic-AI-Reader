@@ -42,9 +42,9 @@ button, select, input { font: inherit; color: inherit; }
 
 /* ---- settings ---- */
 #settings {
-  position: fixed; top: 57px; left: 0; right: 0; z-index: 6; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  position: fixed; top: var(--topbar, 57px); left: 0; right: 0; z-index: 4; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 10px 16px; padding: 12px; background: #120d0a; border-bottom: 1px solid var(--gold); font: 14px system-ui, sans-serif;
-  max-height: calc(100vh - 70px); overflow-y: auto; box-shadow: 0 12px 30px rgba(0,0,0,.6);
+  max-height: calc(100vh - var(--topbar, 57px) - 10px); padding-bottom: 20px; overflow-y: auto; box-shadow: 0 12px 30px rgba(0,0,0,.6);
 }
 #settings[hidden] { display: none; }
 #settings label { display: flex; flex-direction: column; gap: 4px; color: var(--muted); }
@@ -53,13 +53,17 @@ button, select, input { font: inherit; color: inherit; }
   background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; color: var(--ink);
 }
 #settings .file { cursor: pointer; text-align: center; }
+#settings .done {
+  grid-column: 1 / -1; padding: 13px; border: 0; border-radius: 10px; cursor: pointer;
+  background: var(--gold); color: #1b130d; font: 700 16px system-ui, sans-serif;
+}
 #simForm { display: flex; gap: 6px; grid-column: 1 / -1; }
 #simText { flex: 1; min-width: 0; }
 
 /* ---- three columns ---- */
 .row { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); column-gap: 14px; }
 .head {
-  position: sticky; top: 57px; z-index: 3; padding: 6px 12px; background: var(--bg);
+  position: sticky; top: var(--topbar, 57px); z-index: 3; padding: 6px 12px; background: var(--bg);
   border-bottom: 1px solid var(--line); font: 600 12px system-ui, sans-serif; letter-spacing: .04em; color: var(--gold);
 }
 .head .col-cop { font-family: var(--coptic); letter-spacing: 0; }

@@ -15,6 +15,26 @@ An app for church: it **listens to the service and shows you where you are in th
 |---|---|
 | ![](docs/phone-portrait.png) | ![](docs/phone-landscape-de.png) |
 
+## Project status (archived, November 2026)
+
+Work is paused. This is where things stand.
+
+**Works and is tested here (not yet on a real phone):**
+- Three-column book screen (English or German | Coptic | Arabic) with the line being read highlighted.
+- Following German speech by words: 94% right passage on real voices with echo and noise (`research/step1/`).
+- Following **spoken / lightly chanted Coptic by sound** on real recordings: the Creed was followed line by line (on a Creed line about 75% of the time). Long melismatic chants are **not** followed yet; they need melody matching against reference recordings.
+
+**Problems reported on a real phone (Android, version 0.1.2):**
+- Settings could not be closed: fixed in the next version (panel placed under the real top bar, Done button, Back closes it).
+- The app became unresponsive when listening started: the Coptic AI kept the processor 100% busy and needed ~720 MB of memory. The next version memory-maps the model (~190 MB app memory), uses 2 cores, and always rests as long as each step took. **Not yet confirmed on a phone.**
+
+**Text accuracy: check before any use in a service.**
+- `books/sample.json` is **unverified test text**: parts were written from memory. Do not use it in a service.
+- `books/tasbeha/` text is copied word for word from tasbeha.org (Coptic, Latin-letter Coptic, English, Arabic). But hymns are grouped and **ordered as the site's pages list them, not necessarily in the order of a real service**. A few speaker labels are merged into the end of a line, as on the source pages. These books need checking against an approved service book.
+- No German service texts exist yet (only the sample). Full German | Coptic | Arabic texts would have to come from eGohm / the Diocese of Southern Germany.
+
+**Resuming work:** see "Install the Android app" and "How the app is built" below. The AI model is not in git (320 MB). `tools/export_model.py` recreates it, and it is also inside every APK on the Releases page.
+
 ## Install the Android app
 
 1. On your phone, open **https://github.com/PetermHanna/Coptic-AI-Reader/releases/tag/app-latest** and download **CopticReader.apk** (about 380 MB, mostly the Coptic AI).

@@ -31,7 +31,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
 
     // the AI model must not be compressed inside the app, so it can be copied out fast
-    androidResources { noCompress += listOf("onnx") }
+    androidResources { noCompress += listOf("ort") }
 
     sourceSets["main"].assets.srcDirs(layout.buildDirectory.dir("generated/www-assets"))
 }
@@ -44,7 +44,7 @@ val copyWebAssets by tasks.registering(Sync::class) {
         into("www")
     }
     from(rootProject.file("model")) {
-        include("w2v_int8.onnx", "vocab.json")
+        include("w2v_int8.ort", "vocab.json")
         into("model")
     }
     into(layout.buildDirectory.dir("generated/www-assets"))

@@ -5,13 +5,16 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowInsets
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.webkit.WebViewAssetLoader
 import org.json.JSONObject
 
@@ -25,30 +28,52 @@ class MainActivity : Activity() {
     private var words: WordListener? = null
     private var coptic: CopticListener? = null
     private var pendingMode: String? = null
+    private var lastStop: String? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = Color.parseColor("#100b08")
-        window.navigationBarColor = Color.parseColor("#100b08")
+        Breadcrumbs.installCrashHandler(applicationContext)
+        lastStop = Breadcrumbs.takeLast(this)
 
         // serve the bundled files from an https address so the page can load its books
         val assets = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
         web = WebView(this).apply {
-            setBackgroundColor(Color.parseColor("#17110d"))
+            setBackgroundColor(BG)
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                     assets.shouldInterceptRequest(request.url)
+
+                override fun onPageFinished(view: WebView, url: String) {
+                    // tell the user if the app stopped unexpectedly last time, and where
+                    lastStop?.let { js("nativeStatus(${JSONObject.quote("Last time the app closed while $it")})") }
+                    lastStop = null
+                }
             }
             addJavascriptInterface(Bridge(), "Native")
             loadUrl("https://appassets.androidplatform.net/assets/www/index.html")
         }
-        setContentView(web)
+
+        // Keep the page out from under the status bar and navigation bar
+        // (Android 15 draws apps edge to edge, which covered the top buttons).
+        val root = FrameLayout(this).apply { setBackgroundColor(BG) }
+        root.addView(web, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        root.setOnApplyWindowInsetsListener { v, insets ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            } else {
+                @Suppress("DEPRECATION")
+                v.setPadding(insets.systemWindowInsetLeft, insets.systemWindowInsetTop, insets.systemWindowInsetRight, insets.systemWindowInsetBottom)
+            }
+            insets
+        }
+        setContentView(root)
     }
 
     /** Called from the page's JavaScript as window.Native.start(...) / stop(). */
@@ -68,25 +93,32 @@ class MainActivity : Activity() {
         }
         stopListening()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        if (mode == "cop") {
-            coptic = CopticListener(
-                this,
-                onSounds = { json -> js("nativeSounds(${JSONObject.quote(json)})") },
-                onStatus = { msg -> js("nativeStatus(${JSONObject.quote(msg)})") },
-                onFailed = { msg -> js("nativeStopped(${JSONObject.quote(msg)})") },
-            ).also { it.start() }
-        } else {
-            words = WordListener(
-                this, mode,
-                onText = { text -> js("nativeHeard(${JSONObject.quote(text)})") },
-                onFailed = { msg -> js("nativeStopped(${JSONObject.quote(msg)})") },
-            ).also { it.start() }
+        try {
+            if (mode == "cop") {
+                coptic = CopticListener(
+                    applicationContext,
+                    onSounds = { json -> js("nativeSounds(${JSONObject.quote(json)})") },
+                    onStatus = { msg -> js("nativeStatus(${JSONObject.quote(msg)})") },
+                    onFailed = { msg -> runOnUiThread { stopListening() }; js("nativeStopped(${JSONObject.quote(msg)})") },
+                ).also { it.start() }
+            } else {
+                Breadcrumbs.mark(this, "listening with the speech recognizer ($mode)")
+                words = WordListener(
+                    this, mode,
+                    onText = { text -> js("nativeHeard(${JSONObject.quote(text)})") },
+                    onFailed = { msg -> runOnUiThread { stopListening() }; js("nativeStopped(${JSONObject.quote(msg)})") },
+                ).also { it.start() }
+            }
+        } catch (e: Throwable) {
+            stopListening()
+            js("nativeStopped(${JSONObject.quote("Could not start listening: ${e.message ?: e.javaClass.simpleName}")})")
         }
     }
 
     private fun stopListening() {
         words?.stop(); words = null
         coptic?.stop(); coptic = null
+        Breadcrumbs.clear(this)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
@@ -107,10 +139,19 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    @Deprecated("Back goes back inside the page first")
+    // Back: close the settings panel first; otherwise leave the app as usual.
+    @Deprecated("Deprecated in Android")
     override fun onBackPressed() {
-        if (web.canGoBack()) web.goBack() else @Suppress("DEPRECATION") super.onBackPressed()
+        web.evaluateJavascript("window.closeSettings ? window.closeSettings() : false") { closed ->
+            if (closed != "true") {
+                @Suppress("DEPRECATION")
+                super.onBackPressed()
+            }
+        }
     }
 
-    companion object { private const val REQ_MIC = 7 }
+    companion object {
+        private const val REQ_MIC = 7
+        private val BG = Color.parseColor("#17110d")
+    }
 }
